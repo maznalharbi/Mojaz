@@ -1,6 +1,7 @@
 .role-selection-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0d4720 0%, #1a5c2e 50%, #0d4720 100%);
+  background-color: #0d4720;
+  background-image: linear-gradient(135deg, #0d4720 0%, #1a5c2e 50%, #0d4720 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -25,7 +26,6 @@
 .role-container {
   max-width: 1000px;
   width: 100%;
-  animation: fadeIn 0.6s ease-out;
   position: relative;
   z-index: 1;
 }
@@ -41,7 +41,9 @@
   font-weight: 900;
   margin-bottom: 16px;
   text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  background: linear-gradient(135deg, #ffffff, #d4af37);
+  color: #ffffff;
+  background-color: #ffffff;
+  background-image: linear-gradient(135deg, #ffffff, #d4af37);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -65,7 +67,8 @@
 }
 
 .role-card {
-  background: linear-gradient(145deg, #ffffff, #f8f9fa);
+  background-color: #ffffff;
+  background-image: linear-gradient(145deg, #ffffff, #f8f9fa);
   border-radius: 20px;
   padding: 48px 40px;
   text-align: center;
@@ -75,6 +78,7 @@
   position: relative;
   overflow: hidden;
   border: 3px solid rgba(212, 175, 55, 0.3);
+  transform: translate3d(0, 0, 0);
 }
 
 .role-card::before {
@@ -84,13 +88,14 @@
   left: 0;
   right: 0;
   height: 8px;
-  background: linear-gradient(90deg, #d4af37, #f4e4b0);
+  background-color: #d4af37;
+  background-image: linear-gradient(90deg, #d4af37, #f4e4b0);
   transform: scaleX(0);
   transition: transform 0.4s ease;
 }
 
 .role-card:hover {
-  transform: translateY(-12px) scale(1.02);
+  transform: translate3d(0, -12px, 0) scale(1.02);
   box-shadow: 0 20px 60px rgba(212, 175, 55, 0.4);
   border-color: #d4af37;
 }
@@ -140,7 +145,8 @@
   font-size: 15px;
   color: #1a5c2e;
   padding: 12px 18px;
-  background: linear-gradient(145deg, #fffef8, #faf9f0);
+  background-color: #fffef8;
+  background-image: linear-gradient(145deg, #fffef8, #faf9f0);
   border-radius: 10px;
   font-weight: 700;
   border: 2px solid rgba(212, 175, 55, 0.3);

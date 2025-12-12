@@ -98,6 +98,13 @@ export const EmployeePage: React.FC<EmployeePageProps> = ({ objections, onLogout
     }
   };
 
+  const handleClearData = () => {
+    if (window.confirm('هل أنت متأكد من حذف جميع البيانات؟ سيتم إعادة تحميل الصفحة.')) {
+      localStorage.removeItem('mojaz_objections');
+      window.location.reload();
+    }
+  };
+
   if (selectedObjection) {
     return (
       <ObjectionDetails
@@ -114,8 +121,8 @@ export const EmployeePage: React.FC<EmployeePageProps> = ({ objections, onLogout
 
       <main className="main-content">
         <div className="container-custom">
-          {/* زر إعادة تحميل البيانات */}
-          <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+          {/* أزرار إدارة البيانات */}
+          <div style={{ marginBottom: '20px', textAlign: 'center', display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <button
               onClick={handleReloadData}
               style={{
@@ -129,7 +136,23 @@ export const EmployeePage: React.FC<EmployeePageProps> = ({ objections, onLogout
                 fontWeight: 'bold'
               }}
             >
-               🔄  
+              🔄 توليد بيانات للتجربة
+            </button>
+
+            <button
+              onClick={handleClearData}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#d32f2f',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: 'bold'
+              }}
+            >
+              🗑️ حذف جميع البيانات
             </button>
           </div>
 

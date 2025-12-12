@@ -8,9 +8,19 @@ export interface AIAnalysisResult {
   hasEvidence: boolean;
   reasoning: string;
   confidence: number;
+  imageAnalysis?: ImageAnalysisResult;
+}
+
+export interface ImageAnalysisResult {
+  bonusScore: number;
+  matchQuality: 'high' | 'medium' | 'low';
+  hasEvidence: boolean;
+  reasoning: string;
+  details: string;
 }
 
 const GEMINI_ENDPOINT = '/api/analyze'; // سنربطه بـ Serverless Function
+const GEMINI_IMAGE_ENDPOINT = '/api/analyzeImage'; // تحليل الصور
 
 /**
  * تحليل نص الاعتراض باستخدام AI
@@ -18,7 +28,8 @@ const GEMINI_ENDPOINT = '/api/analyze'; // سنربطه بـ Serverless Function
 export async function analyzeObjectionWithAI(
   objectionText: string,
   violationType: string,
-  attachmentsCount: number = 0
+  attachmentsCount: number = 0,
+  images?: File[]
 ): Promise<AIAnalysisResult> {
   try {
     const response = await fetch(GEMINI_ENDPOINT, {
@@ -37,23 +48,72 @@ export async function analyzeObjectionWithAI(
       throw new Error('فشل التحليل');
     }
 
-    const result = await response.json();
+    const result: AIAnalysisResult = await response.json();
+
+    if (images && images.length > 0) {
+      try {
+        const imageAnalysisResults = await analyzeImages(images, violationType, objectionText);
+        result.imageAnalysis = imageAnalysisResults;
+
+        if (imageAnalysisResults.bonusScore >= 20) {
+          if (result.priority === 'medium') result.priority = 'high';
+          if (result.priority === 'low') result.priority = 'medium';
+        }
+      } catch (imageError) {
+        console.error('خطأ في تحليل الصور:', imageError);
+      }
+    }
+
     return result;
   } catch (error) {
     console.error('خطأ في تحليل AI:', error);
-    // Fallback للتحليل المحلي
     return analyzeFallback(objectionText, attachmentsCount);
   }
 }
 
-/**
- * تحليل احتياطي محلي (بدون AI)
- * يستخدم في حالة فشل الاتصال بـ API
- */
+async function analyzeImages(
+  images: File[],
+  violationType: string,
+  objectionText: string
+): Promise<ImageAnalysisResult> {
+  const firstImage = images[0];
+  const base64Image = await convertImageToBase64(firstImage);
+
+  const response = await fetch(GEMINI_IMAGE_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      image: base64Image,
+      violationType: violationType,
+      objectionText: objectionText,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('فشل تحليل الصورة');
+  }
+
+  const result: ImageAnalysisResult = await response.json();
+  return result;
+}
+
+function convertImageToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      resolve(result);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 function analyzeFallback(text: string, attachmentsCount: number = 0): AIAnalysisResult {
   const lowerText = text.toLowerCase();
 
-  // كشف الأدلة
   const evidenceKeywords = [
     'صورة', 'صور', 'إيصال', 'مرفق', 'وثيقة',
     'ورقة', 'فحص', 'استمارة', 'عقد', 'تقرير'
@@ -63,7 +123,6 @@ function analyzeFallback(text: string, attachmentsCount: number = 0): AIAnalysis
   const hasAttachments = attachmentsCount > 0;
   const hasEvidence = hasEvidenceInText || hasAttachments;
 
-  // كشف الحجج القوية
   const strongArguments = [
     'خطأ', 'خاطئ', 'لوحة', 'دفعت', 'ورشة',
     'عطل', 'معطلة', 'رادار', 'كاميرا'
@@ -71,7 +130,6 @@ function analyzeFallback(text: string, attachmentsCount: number = 0): AIAnalysis
 
   const hasStrongArgument = strongArguments.some(keyword => lowerText.includes(keyword));
 
-  // كشف الاعتذارات الضعيفة
   const weakPhrases = [
     'آسف', 'أعتذر', 'مستعجل', 'متعب', 'مشتت',
     'نسيت', 'لم أركز', 'ضغط نفسي'
@@ -79,7 +137,6 @@ function analyzeFallback(text: string, attachmentsCount: number = 0): AIAnalysis
 
   const isWeak = weakPhrases.some(phrase => lowerText.includes(phrase));
 
-  // تحديد الأولوية
   let priority: 'high' | 'medium' | 'low';
   let confidence: number;
   let reasoning: string;
@@ -106,9 +163,6 @@ function analyzeFallback(text: string, attachmentsCount: number = 0): AIAnalysis
   };
 }
 
-/**
- * تحليل دفعة من الاعتراضات
- */
 export async function analyzeBatch(objections: Array<{
   text: string;
   violationType: string;
@@ -117,7 +171,6 @@ export async function analyzeBatch(objections: Array<{
 }>): Promise<Map<string, AIAnalysisResult>> {
   const results = new Map<string, AIAnalysisResult>();
 
-  // تحليل بالتوازي (بحد أقصى 5 في نفس الوقت)
   const batchSize = 5;
   for (let i = 0; i < objections.length; i += batchSize) {
     const batch = objections.slice(i, i + batchSize);
