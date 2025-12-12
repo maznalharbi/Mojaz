@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/Mojaz/static/css/main.dde85638.css",
-    "main.js": "/Mojaz/static/js/main.2cbfca77.js",
+    "main.css": "/Mojaz/static/css/main.273fdfac.css",
+    "main.js": "/Mojaz/static/js/main.cb1a9e85.js",
     "static/js/453.ba05de8f.chunk.js": "/Mojaz/static/js/453.ba05de8f.chunk.js",
     "index.html": "/Mojaz/index.html",
-    "main.dde85638.css.map": "/Mojaz/static/css/main.dde85638.css.map",
-    "main.2cbfca77.js.map": "/Mojaz/static/js/main.2cbfca77.js.map",
+    "main.273fdfac.css.map": "/Mojaz/static/css/main.273fdfac.css.map",
+    "main.cb1a9e85.js.map": "/Mojaz/static/js/main.cb1a9e85.js.map",
     "453.ba05de8f.chunk.js.map": "/Mojaz/static/js/453.ba05de8f.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.dde85638.css",
-    "static/js/main.2cbfca77.js"
+    "static/css/main.273fdfac.css",
+    "static/js/main.cb1a9e85.js"
   ]
 }
