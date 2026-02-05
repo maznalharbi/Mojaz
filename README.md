@@ -106,7 +106,6 @@ src/
 
 **Team Saf**
 
-Graduation Project - Powered by AI 🤖
 
 </div>
 
@@ -231,7 +230,6 @@ src/
 
 **فريق صفّ**
 
-مشروع تخرج - مدعوم بالذكاء الاصطناعي 🤖
 
 </div>
 
