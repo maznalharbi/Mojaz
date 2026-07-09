@@ -61,7 +61,7 @@ export const CitizenPage: React.FC<CitizenPageProps> = ({ onSubmitObjection, onB
       setTextAnalysisStatus('analyzing');
       await new Promise(resolve => setTimeout(resolve, 800));
 
-      const analysis = await analyzeObjectionWithAI(objectionText, violationType, images.length, images);
+      const analysis = await analyzeObjectionWithAI(objectionText, violationType, images);
 
       setTextAnalysisStatus('done');
       await new Promise(resolve => setTimeout(resolve, 300));

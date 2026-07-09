@@ -34,7 +34,6 @@ export const EmployeePage: React.FC<EmployeePageProps> = ({ objections, onLogout
         id: obj.id,
         text: obj.description,
         violationType: obj.violationType,
-        attachmentsCount: obj.evidence?.length || 0,
       }));
 
       // تحليل كل الاعتراضات بالـ AI

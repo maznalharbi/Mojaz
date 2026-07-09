@@ -28,7 +28,6 @@ const GEMINI_IMAGE_ENDPOINT = '/api/analyzeImage'; // تحليل الصور
 export async function analyzeObjectionWithAI(
   objectionText: string,
   violationType: string,
-  attachmentsCount: number = 0,
   images?: File[]
 ): Promise<AIAnalysisResult> {
   try {
@@ -40,7 +39,6 @@ export async function analyzeObjectionWithAI(
       body: JSON.stringify({
         text: objectionText,
         violationType: violationType,
-        attachmentsCount: attachmentsCount,
       }),
     });
 
@@ -50,15 +48,11 @@ export async function analyzeObjectionWithAI(
 
     const result: AIAnalysisResult = await response.json();
 
+    // تحليل الصور يُعرض للمستخدم فقط، ولا يغيّر الأولوية
+    // لأن الأولوية تُحدد بناءً على نص الاعتراض حصراً
     if (images && images.length > 0) {
       try {
-        const imageAnalysisResults = await analyzeImages(images, violationType, objectionText);
-        result.imageAnalysis = imageAnalysisResults;
-
-        if (imageAnalysisResults.bonusScore >= 20) {
-          if (result.priority === 'medium') result.priority = 'high';
-          if (result.priority === 'low') result.priority = 'medium';
-        }
+        result.imageAnalysis = await analyzeImages(images, violationType, objectionText);
       } catch (imageError) {
         console.error('خطأ في تحليل الصور:', imageError);
       }
@@ -67,7 +61,7 @@ export async function analyzeObjectionWithAI(
     return result;
   } catch (error) {
     console.error('خطأ في تحليل AI:', error);
-    return analyzeFallback(objectionText, attachmentsCount);
+    return analyzeFallback(objectionText);
   }
 }
 
@@ -111,7 +105,7 @@ function convertImageToBase64(file: File): Promise<string> {
   });
 }
 
-function analyzeFallback(text: string, attachmentsCount: number = 0): AIAnalysisResult {
+function analyzeFallback(text: string): AIAnalysisResult {
   const lowerText = text.toLowerCase();
 
   const evidenceKeywords = [
@@ -119,9 +113,7 @@ function analyzeFallback(text: string, attachmentsCount: number = 0): AIAnalysis
     'ورقة', 'فحص', 'استمارة', 'عقد', 'تقرير'
   ];
 
-  const hasEvidenceInText = evidenceKeywords.some(keyword => lowerText.includes(keyword));
-  const hasAttachments = attachmentsCount > 0;
-  const hasEvidence = hasEvidenceInText || hasAttachments;
+  const hasEvidence = evidenceKeywords.some(keyword => lowerText.includes(keyword));
 
   const strongArguments = [
     'خطأ', 'خاطئ', 'لوحة', 'دفعت', 'ورشة',
@@ -167,7 +159,6 @@ export async function analyzeBatch(objections: Array<{
   text: string;
   violationType: string;
   id: string;
-  attachmentsCount?: number;
 }>): Promise<Map<string, AIAnalysisResult>> {
   const results = new Map<string, AIAnalysisResult>();
 
@@ -175,7 +166,7 @@ export async function analyzeBatch(objections: Array<{
   for (let i = 0; i < objections.length; i += batchSize) {
     const batch = objections.slice(i, i + batchSize);
     const promises = batch.map(async (obj) => {
-      const result = await analyzeObjectionWithAI(obj.text, obj.violationType, obj.attachmentsCount || 0);
+      const result = await analyzeObjectionWithAI(obj.text, obj.violationType);
       return { id: obj.id, result };
     });
 
